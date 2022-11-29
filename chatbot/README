@@ -1,0 +1,52 @@
+makarenko
+342849676
+
+Below are examples of short conversations between two of my bots: Alice and Bob. Unfortunately, only short
+conversations turned out to be meaningful.
+
+Example 1:
+User: I like muffins.
+Alice: who said that?
+Bob: completely agree with you.
+Alice: wow, you are smarter than I thought.
+Bob: oh, that was nice.
+Alice: sorry, I can't say 'oh, that was nice.'.
+Bob: who said that?
+
+Example 2:
+User: say muffins.
+Alice: I heard that people usually like muffins..
+Bob: I heard that it's not true.
+Alice: speak louder, please. can't hear you.
+
+Example 3:
+User: say Java
+Alice: I heard that people usually like Java.
+Bob: speak louder, please. can't hear you.
+Alice: yeah, totally.
+Bob: say something, please.
+
+I was forced to make more illegal request patterns because there were more illegal requests (almost all legal
+ones were from the user. That is, from me). Below are the arrays of patterns:
+Legal request patterns: {"well, if you insist I will say "+ChatterBot.REQUESTED_PHRASE_PLACEHOLDER+". "+
+                          ChatterBot.REQUESTED_PHRASE_PLACEHOLDER,
+                         "I heard that people usually like "+ChatterBot.REQUESTED_PHRASE_PLACEHOLDER+".",
+                         "wow, people are so smart. They even invented "+
+                          ChatterBot.REQUESTED_PHRASE_PLACEHOLDER,
+                         "what is so special about "+ChatterBot.REQUESTED_PHRASE_PLACEHOLDER+"?"}
+Illegal request patterns: {"sorry, I can't say '"+ChatterBot.ILLEGAL_REQUEST_PLACEHOLDER+"'.",
+                           "speak louder, please. can't hear you.",
+                           "can you repeat what you've just said, please?",
+                           "I heard that it's not true.",
+                           "who said that?",
+                           "say '"+ChatterBot.ILLEGAL_REQUEST_PLACEHOLDER+"' yourself.",
+                           "completely agree with you.",
+                           "wow, you are smarter than I thought.",
+                           "oh, that was nice.",
+                           "say something, please.",
+                           "I have a friend now. it's you, silly!",
+                           "can you hear me?",
+                           "yeah, totally.",
+                           "no.",
+                           "never been interested in that.",
+                           "what do you want?"}

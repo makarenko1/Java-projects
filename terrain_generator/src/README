@@ -1,0 +1,175 @@
+morhen
+makarenko
+
+
+The packages in each of the UMLS, as they didn't show up in the UML itself:
+1. Initial UML:
+src:
+    pepse:
+       assets:
+        avatar1.png
+        avatar2.png
+        avatar3.png
+       util:
+        ColorSupplier
+        PerlinNoise
+    world:
+        daynight:
+            Night
+            Sun
+            SunHalo
+        trees:
+            Planter
+            Tree
+        Avatar
+        Block
+        Sky
+        Terrain
+    PepseGameManager
+
+2. Final UML:
+src:
+    pepse:
+       assets:
+        avatar1.png
+        avatar2.png
+        avatar3.png
+       util:
+        ColorSupplier
+        PerlinNoise
+    world:
+        daynight:
+            Night
+            Sun
+            SunHalo
+        trees:
+            LeafBlock
+            Tree
+            Trunk
+
+        Avatar
+        Block
+        EnergyCounter
+        Sky
+        Terrain
+    PepseGameManager
+
+Differences between the two UML Diagrams:
+1. The implementation of the trees package is particularly different, as described later in detail (the
+initial plan is described in the dilemmas part and the final plan in the implementation of the package Trees).
+In short, the older plan involved a Planter class that the terrain as a private member, and its purpose is to
+plants all of the tree (leaves and trunk together). This planter would have a public plantTree function that
+will be used in Tree. The new plan separates between the Leaves and the Trunks into two classes as they are
+different beings with complex behavior. This change shows on the UML in the aggregation relations of the trees
+package - for example, in the original UML, Tree has a Planter (that has a Terrain) in the original UML, but
+in the final one Tree simply has a Terrain.
+2. The EnergyCounter class was a late addition to the project. Initially, we thought we just need a private
+energy field in avatar, as we didn't plan on showing the energy on the screen. However, we decided in the end
+to show it on the screen, and as such created an energyCounter (similarly to NumericLifeCounter in project 3),
+which also helped us in making sure the energy works properly. This change also required adding a getEnergy()
+public method in avatar that is needed for the creation of the EnergyCounter object.
+3. The isTreeInX method of the Tree class - The Tree class in the final project maintains
+a set of X values that has a tree planted in them. The method returns whether a certain X is occupied by a
+tree, thus, is in the set. This is used to make sure the avatar is created on top of a tree.
+The original UML doesn't contain this method as we didn't think about the avatar colliding with a tree
+upon created in that stage.
+
+
+Implementation of infinite world:
+The implementation of the infinite world happens solely in the PepseGameManager class, as it is its
+responsibility as the game manager to do so. The initial world is defined to be a little bigger than the
+borders of the window. So, we define the initial world to be from -A to windowDimensions().x() + A, where A
+is some value (in our case 400). When the avatar walks half of the available buffer distance (A / 2), the
+world needs to be updated. We use the update method of the PepseGameManager class to do so and divide into
+two cases:
+1. If the avatar needs the world on its left to be created, we will need to shift the borders of the world
+A / 2 to the left. We will delete all the unnecessary terrain and tree objects (that are out of the new
+borders on the right) by finding them by their tags. We don't need to delete the objects on the left because
+they are still on the screen (still part of the world). We can simply create the world in the part from the
+left that we added to the world and that is still empty. We need to create only the terrain and the trees.
+Thus, we can create and remove minimum number of objects.
+2. The second case is symmetric to the right.
+
+
+Implementation of the package Trees:
+The trees package consists of three classes:
+1. The Tree class - This class is responsible for the creation of the tree objects within the game.
+It does so by implementing the createInRange(minX, maxX) static function, that randomly creates trees in the
+range [minX, maxX]. The class keeps tracks of the locations it places trees in, via the allXWithTree set that
+contains the topLeftCorner X coordinate of placed trees. This enables us to avoid creating objects on top of
+trees (like the avatar). Every tree is constructed in two parts - the first one is its trunk and the second
+one is its leaves. The trunk creation is handled by the Trunk class. Each leaf is created by constructing a
+new leafBlock object. For each tree, its leaves are created in a shape of a square (with randomly selected
+edges size in the range [MIN_NUM_LEAVES, MAX_NUM_LEAVES)),
+beginning from the coordinate (treeTrunk.X - square_edge / 2, treeTrunk.Y - square_edge / 2).
+The square consists of square_size * 2 possible leaves, whereas for each sub-square within the square, the
+decision whether to create a leaf in that sub-square is determined randomly.
+In conclusion, the Tree class determines the location of a tree trunk and its leaves, and connects them
+together into one being after each of them is constructed in their respective class.
+2. The Trunk class - A simple class, handling the creation of a trunk in a given X coordinate. The class
+randomly chooses the number of blocks the trunk will be made of (the tree height) and constructs a trunk in
+the given X coordinate accordingly.
+3. The leaf class - This class handles the creation of a tree leaves and their behavior. Given the location
+coordinates, the tree class creates a leafBlock in that location and initializes its unique behavior, using
+schedule tasks and transitions.
+Upon a leaf creation, 3 random number are picked:
+1. lifeTime - represents the time the leaf will stay on the tree.
+2. deathTime - represents the time the tree will stay invisible after its fade out process was done.
+3. startBehaviorTime - represents the time until a leaf will begin its unique behavior every cycle.
+Each leaf goes through the following cycle:
+After a period of startBehaviorTime, it begins swifting in the wind, while on the tree. After a period
+lifeTime, it begins falling from the tree and slowly fading away. Upon reaching the ground, the tree will stop
+moving while continuing to fade away. After a period of DeathTime after fading away completely, the leaf will
+be re-born in its initial location. Then, the cycle will repeat itself endlessly.
+The logic behind this implementation is to separate each unique part of the tree into a different area of
+responsibility. Each tree consists of two main parts - its trunk and its leaves. The creation of each part is
+handled in a separate class. Then, the two parts are composed together into one Tree via the Tree class.
+Implementation as such made it easier for us to debug the package. In addition, it allows other programmers to
+easily understand where and how each part is implemented.
+The trees package has a boolean member named isFirstCreation. This member indicates whether the creation of
+the Trees happens for the first time. Its purpose is to serve the allXWithTree set. We want to add to it only
+X coordinates of trees in the initial creation of the world, as the avatar only spawns one time, and the set
+is used to make sure the avatar doesn't spawn in a coordinate that has a planted tree.
+
+
+Dilemmas and Design decision:
+1. The Trees package When we first started working on the project, we weren't sure on how exactly to implement
+the trees package. Our first idea, as shown in the UML diagram, was to create one class in addition to tree,
+named Planter, which will handle all of the logic behind the tree. That is, the Tree class will only provide X
+coordinates to the planter, and the planter will do the rest of the job. However, as we later found out, this
+idea was not that great. As the logic behind the tree wasn't as simple as we thought, the code in the planter
+class grew long and tedious. After we finished the package, we decided that the Planter class code was hard to
+understand, and decided to change the package altogether into what is is now.
+2. Creation of objects in the project - As given to us in the API, the Avatar, Sun, Night and SunHalo
+should be created by using static methods. To maintain consistency, we decided to follow that API in the
+EnergyCounter and Trunk
+3. Access to tags of different classes from the PepseGameManager - In order to create the infinite word
+efficiently and prevent overloading the DanoGameLab application, we needed to remove unneeded (unseen) trees,
+leaves and terrain blocks from the world. As each of this gameObjects belongs to a different class, we
+needed a way to match each object to its layer. A natural solution was to go by their tags. If the object is
+tagged as a leaf, it belongs to the LEAF_LAYER. However, we were unsure how we should allow the access to the
+tags, as we only needed access to specific object tags (only leaves, trunks and terrain blocks).
+We came up with different solutions:
+a. Declare all the tags in the PepseGameManager class and send them to the different classes in the
+constructors. This option was ruled out as we thought the tag of an object is a unique
+attribute of its class and as such should be declared there.
+b. Declare the tags private in each class and create a getter. This option was ruled out because in order to
+support polymorphism (like a for-each loop of the gameObjects), we'd have to create getters for other classes
+like Sun and Night that we didn't need access to.
+c. The chosen option - declare the needed tags public. This option both allowed us to avoid unnecessary
+accessors and allowed usage of polymorphism via the built-in getTag() method of DanoGameLab, as seen in the
+removeObject method of PepseGameManager.
+4. While implementing the movement of the Avatar, we encountered a problem of the Application that resulted in
+the avatar being stuck under the ground. When the avatar descends into the ground with very high velocity in
+the Y axis, the application doesn't detect the collision between the avatar and the terrain blocks in time,
+and as such he moves through them. One possible solution to this problem is to patch it up - if the avatar
+hits the ground and is located under it, simply move him up to the ground again. However, this solution
+required us to give Avatar access to the Terrain class methods. Since the avatar doesn't get a terrain object
+in the givenAPI (the static create function), we have decided not to go around it and allow access, and solve
+the problem in a different way - limiting the movement speed of the avatar in the Y axis to
+MAX_VELOCITY.
+
+
+Notes:
+The PerlinNoise class is not well documented as it contains complex, unlearned algorithms to construct a
+random, well-built terrain.

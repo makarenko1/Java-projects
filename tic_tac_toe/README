@@ -1,0 +1,42 @@
+makarenko
+342849676
+
+Players' strategies:
+1. Mr. Whatever
+This player chooses a random row and a random column (in the borders of the game board). Then the player
+tries to put a mark in the cell at that row and column. The process repeats itself until the mark is put. We
+can notice that there is uniform probability to try putting a mark in any cell of the board. In particular,
+because the player can only put a mark in empty cells, there is uniform probability to put a mark in any cell
+of the board, as needed.
+2. Mrs. Clever
+The player chooses a random row, and then tries to put a mark in every column subsequently until the mark is
+put. If the mark can't be put at this row, the process repeats itself. Because the game hasn't finished, it
+is guaranteed that at some row in the board there will be an empty cell (so this process isn't infinite).
+We can notice that this strategy is more effective than the strategy of Mr.Clever because it is more likely to
+create a sequence of marks in the same row of the length that is needed to win.
+Another (possibly good) strategy that wasn't implemented: choose a random boolean value. If the value is
+true, then the player mimics the behavior of Mr.Whatever. Else, the player mimics the behavior of Mr.
+Snartypamts. So, it will be with 50% chance better at strategy than Mr. Whatever and with 50% chance worse at
+strategy than Mr. Snartypamts. All in all, it will be an "average" player. But this strategy failed the
+wins probability tests.
+3. Mr. Snartypamts
+The player starts at the top-left corner of the board and traverses the board from left to right, from top to
+bottom, looking for the first empty cell to put a mark at. This strategy guarantees that (without the
+intervention of the other players) there will be winning sequences of marks.
+
+Game results for the board with SIZE = 6, WIN_STREAK = 4:
+1. 500 none clever whatever
+=== player 1: 396 | player 2: 104 | Draws: 0 ===
+
+2. 500 none snartypamts clever
+=== player 1: 362 | player 2: 138 | Draws: 0 ===
+
+3. 500 none snartypamts whatever
+=== player 1: 484 | player 2: 16 | Draws: 0 ===
+
+4. 10000 none whatever whatever
+=== player 1: 4986 | player 2: 4960 | Draws: 54 ===
+
+Notes:
+The enum Mark is included in a separate file because this enum used not only in the Board class but in the
+others also. So, it was done for the sake of modularity.

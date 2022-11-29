@@ -1,0 +1,130 @@
+makarenko
+342849676
+
+a) Bricker:
+The list of packages and the classes in each package is:
+1. src
+    BrickerGameManager
+2. src.brick_strategies
+    i. AddPaddleStrategy
+    ii. BrickStrategyFactory
+    iii. ChangeCameraStrategy
+    iv. ChangePaddleWidthStrategy
+    v. CollisionStrategy - interface
+    vi. PuckStrategy
+    vii. RemoveBrickStrategy
+    viii. RemoveBrickStrategyDecorator.
+3. src.gameobjects
+    i. Ball
+    ii. BallCollisionCountdownAgent
+    iii. Brick
+    iv. GraphicLifeCounter
+    v. MockPaddle
+    vi. NumericLifeCounter
+    vii. Paddle
+    viii. Puck
+    ix. StatusDefiner
+Design patterns:
+The division of the classes into the packages was by their purpose: the classes that represent game objects
+are in the src.gameobject package, and the classes that represent the various brick strategies are in the
+src.brick_strategies package. The main package src contains the two packages and also the BrickerGameManager
+class that manages the whole game. The purpose and the description of each class and its methods are in the
+corresponding file. The algo_questions package is disjoint from the game and contains solutions to the
+algorithmic problems.
+1. Inheritance - because all the objects in the game have "is-a" relation with the GameObject class, they
+all extend the GameObject class.
+2. Strategy - we have many classes for different brick strategies, thus achieving modularity. All the
+strategies implement the same interface, so if we would like to add a new strategy, it will only have to
+implement the CollisionStrategy interface. This design pattern allows us to choose the behavior we need at
+runtime.
+3. Factory - we have a BrickStrategyFactory class to create the strategies for the bricks. Because there are
+many different brick strategies, if there hadn't been a factory, then we would have been obliged to update
+code in different places. In this way, only the factory class knows what strategies are there, and if we will
+change (add or delete) the list of strategies, we will update only the factory class.
+The design patterns include the Factory Method pattern, the Decorator pattern, the Observer pattern, and the
+Chain of Responsibility pattern.
+4. Decorator - we have the RemoveBrickStrategyDecorator class that is a decorator. Because all the brick
+strategies remove the collided brick and also add some functionality of their own, it is natural to make this
+class abstract and a decorator. This way, all the "non-trivial" strategy classes that inherit from this
+decorator class are responsible only for their own behavior, and for the basic behavior of the removing
+bricks is responsible the RemoveBricksStrategy class.
+5. Observer - we have the BallCollisionCountdownAgent class that is an observer for the ChangeCameraStrategy
+class (notifies the instance of the ChangeCameraStrategy class that the ball has collided a certain number of
+times).
+Everything was done according to the API. The part that was added (the additional brick strategy) was the
+strategy of changing the paddle's width. The class ChangePaddleWidthStrategy is a Concrete Decorator. The
+game object that is dropped from the bricks that implement this strategy is an instance of the StatusDefiner
+class that extends the GameObject class (it "is-a" GameObject).
+
+b) Algorithms:
+1. aLotStudyTime
+    i. We will use a greedy algorithm. For each time slot we will find the most "compatible" task. Because to
+    each time slot we can assign only one task, it doesn't matter if we will start assigning from the longest
+    time slot or from the shortest one. We will start from the shortest one. We will sort the two arrays
+    (previously copied them not to change the input arrays) and for each time slot (from the smallest to the
+    biggest) we will try to assign the smallest task that hasn't been assigned to any of the time slots yet.
+    If the smallest task doesn't fit in the current time slot, we will try to fit it in the next one. If it
+    fits, we will increment the task counter and we will proceed to the next smallest task and the next slot.
+    Because to each time slot we can assign only one task, by assigning the most "compatible" tasks to each
+    time slot, we create the optimal solution. Therefore, the algorithm is correct.
+    ii. The copying of the task array takes n, and the copying of the timeSlots array takes m. The running of
+    the Java sort algorithm on the copied tasks array takes O(n*log(n)), and on the copied timeSlots array -
+    O(m*log(m)). The following for loop iterates over all the elements in the timeSlots array in the worst
+    case, so there are O(m) iterations. In each iteration of the for loop we we perform a constant amount of
+    work O(1). So the total running time of the algorithm is:
+    O(n*log(n)) + O(m*log(m)) + O(m) = O(n*log(n)) + O(m*log(m))
+2. minLeap
+    i. The base case is when the start leaf is also the destination leaf. That is, if there is only one
+    element in the leapNum array. In this case we will return 0 because there is no need to jump. For the
+    rest of the cases we will use a greedy algorithm. We will traverse the given leapNum array until the leaf
+    before the last one, storing the maximum reach leaf index until now, the number of steps we can still
+    take in the current jump and the number of jumps needed. In each iteration we update the maximum reach
+    (if the farthest leaf index reachable from the current position is bigger than the maximum reach, we
+    change the maximum reach to that value). Because we made a step from the previous leaf to this, we
+    decrement the step counter. If there are no more steps available, then we must jump. So, we
+    increment the number of jumps so far and initialize the steps to to be the number of steps to reach
+    the maximum reachable index from i. Because we always have the correct maximum reachable index in the
+    array, then the algorithm is correct.
+    ii. In the for loop there are leapNum.length-2 = n-2 iterations, and in each iteration there is a
+    constant amount of work performed. So the total running time of the algorithm is:
+    O(n-2) = O(n)
+3. bucketWalk
+    i. The base case is when n=0, and in this case we will return 1. For the rest of the cases we will use a
+    dynamic programming algorithm. The sub-problems are, for each i from 0 to n, the number of unique ways to
+    fill the water trough that holds i liters. We initialize a table of size n+1 for storing the solutions to
+    the sub-problems. The base cases are i=0 and i=1. There is only one way to fill a trough that can hold 0
+    liters of water (bring 0 liters of water) and only one way to fill a trough that can hold 1 liter (bring
+    1 liter of water). For the rest of the problems, the solution is the sum of the ways to fill the trough
+    if we brought one liter this time (equals to the number of ways to fill a trough that holds i-1 liters)
+    and if we brought two liters this time (equals to the number of ways to fill a trough that holds i-2
+    liters). The solution to the main problem will be in the cell n of the table. Because we will write to
+    the table from the left to the right, we can notice that all the cells that are needed to calculate the
+    current cell will be already full. Therefore, the algorithm is correct.
+    ii. The initialization of the table takes O(n+1). In the following for loop there are n-1 iterations, and
+    in each iteration there is a constant amount of work performed. So the total running time of the
+    algorithm is:
+    O(n+1) + O(n-1) = O(n)
+4. numTrees
+    i. We will use a dynamic programming algorithm. The sub-problems are, for each i from 0 to n, the number
+    of unique binary search trees that have exactly i nodes of unique values from 1 to i. We initialize a
+    table of size n+1 for storing the solutions to the sub-problems. The base cases are i=0 and i=1. There is
+    only one such BST for i=0 and one for i=1. For the rest of the problems, for all j from 1 to i, if j
+    is the root, then [1,...,j-1] numbers will be in the left subtree and [j+1,...,i] will be in the right
+    subtree. So, the answer in the cell i will be the summation of the products of the answer in the cell j-1
+    and in the cell i-j for all values of j from 1 to i. The solution to the main problem will be in the cell
+    n of the table. Because we will write to the table from the left to the right, we can notice that all the
+    cells that are needed to calculate the current cell will be already full. Therefore, the algorithm is
+    correct.
+    ii. The initialization of the table takes O(n+1). In the following outer loop there are n-1 iterations.
+    In each iteration go into the inner for loop, and the inner for loop iterates over all the indexes that
+    are smaller or equal to the current index in the outer loop. So, in sum for two loops, there are O(n^2)
+    iterations. In each iteration of the inner loop a constant amount of work is performed. So the total
+    running time of the algorithm is:
+    O(n^2) + O(n+1) = O(n^2)
+
+c) Notes:
+1. I didn't set the width and the height of the statuses to be the width and the height of the brick that
+they dropped from because I think that to make the game more pretty they need to be smaller.
+2. I added the sound to the dropping of the ball.
+3. I made the new paddle to be located at a random x coordinate to make the game a bit unpredictable and more
+interesting.

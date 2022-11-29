@@ -1,0 +1,118 @@
+makarenko
+342849676
+
+1. Explanations on the usages of the Collections library:
+a. cache field - BrightnessImgCharMatcher:
+    A HashMap is used to store the brightnesses of the image objects. We will calculate the brightness of
+    each sub-image in the given image only once, store it with its brightness as key and value in the map
+    (the cache field of the BrightnessCharMatcher objects), and the next time we need the brightness of that
+    sub-image, we will retrieve it from the HashMap. Thus, we slightly slow down the render method when it is
+    called for the first time on the image, but we speed up the next calls.
+    It is possible to replace a map with two static arrays, in which there wold be key-value pairs at the
+    corresponding indexes. But because the number of the sub-images depends on the user input, then we don't
+    know it in advance. And so, it is not convenient to use static arrays, for which we must know the size at
+    the compilation time, instead of a HashMap.
+    Moreover, using a HashMap is more efficient in terms of running time. Both adding an image into the
+    HashMap and searching it take O(1) in the worst case. However, to add an image without repetitions and to
+    search it in a static array we would have to traverse the array, which would take O(n) in the worst case.
+b. charSet field - Shell:
+    A HashSet is used to store all the available characters for ASCII art. Because the user can add and
+    remove the available characters, then we don't know the size of the array that is needed to store all the
+    characters in advance. So, it is not convenient to use a static array for which we must know the size at
+    the compilation time. And because each character can only appear once in the available characters, we use
+    a HashSet.
+    Moreover, using a HashSet is more efficient in terms of running time. Both adding a character into the
+    HashSet and removing it take O(1) in the worst case. However, to add a character without repetitions into
+    a static array, or to remove a character from it, we would have to traverse the array (to check if this
+    character is already in this array or not - for adding, to find its index or make sure it isn't in this
+    array - for removing), which would take O(n) in the worst case.
+c. showChars method - Shell:
+    The stream method is used to obtain a stream from the charSet HashSet in order to sort the characters in
+    the HashSet before printing. We can notice that the time complexity of turning the HashSet into an array,
+    sorting it and then printing, is the same (O(n * log(n) if we use Arrays.sort()).
+d. render method - Shell:
+    The toArray method is used to obtain an array from the charSet to send it to the chooseChars method in
+    BrightnessCharMatcher.
+e. translatedWords variable - Algorithms:
+    A Set is used to store all the unique Morse codes in the given words array (that is, without repetitions).
+    Although we know the number of the total morse codes in the given at the compile time (which is equal to
+    its size and is greater than or equal to the number of unique morse codes in the given array) and so we
+    can use a static array, it is more efficient to use a Set to calculate the number of unique Morse codes.
+    Adding a Morse code to a Set takes O(1) in the worst case, and by the Set definition there are only
+    unique Morse codes stored. However, to store only unique Morse codes in a static array, we would have to
+    traverse the array, which would take O(n) in the worst case.
+f. showChars method - Shell
+g. Notes:
+    I chose not to use the Collections library in the BrightnessImgCharMatcher class (and not to change it in
+    the second part of the exercise) because its use didn't show significant improvements in time or space
+    complexity.
+
+2. Algorithms:
+a. findDuplicate
+        By the assumption, there exists only one repeated number in the given array. Also, the length of the
+    given array is n + 1 and every number in it is in the range [1, n] for some natural n. So, if we
+    traverse the given array by always using the current value as the next index to go to, there will be a
+    cycle. The entrance to the cycle must be the repeated number. Suppose C is the length of the cycle in the
+    given array, such that C < n + 1 (C is smaller than the array length). And suppose that there are K steps
+    to get from the start of the given array (numList[0]) to the beginning of the cycle.
+        We will use an algorithm that is based on the Floyd's Cycle Detection algorithm. We will define two
+    variables, hare and tortoise, that are equal to the first element of the given array (that is, they are
+    at the start of the array).
+        In the first phase of the algorithm hare runs twice as fast as the tortoise (tortoise =
+    numList[tortoise], hare = numList[numList[hare]]), and so the hare will be the first to enter the cycle
+    and run around it. At some point, the tortoise also enters the cycle. When tortoise first enters the
+    cycle, it moved K times. At the same time, the hare moved K times past the beginning of the cycle (2K
+    times in total), and it is somewhere in it. We can notice that hare's current distance from the start of
+    the cycle is (K % C). And so, the gap between the hare and the tortoise is (C - (K % C)).
+        Because hare and tortoise have different speeds, they will meet at some "intersection" point in the
+    cycle. We can notice that with each move the gap between the hare and the tortoise will shorten by one.
+    Therefore, it will take the tortoise (C - (K % C)) steps past the start of the cycle to reach the hare.
+    When the two reach the intersection point, the first loop exits.
+        We can notice that the number of iterations of the first loop (do-while) is equal to the number of
+    steps the tortoise did to reach the hare. It did K steps to reach the cycle and also (C - (K % C)) = O(C)
+    steps in the cycle, so the total number of steps is O(C + K). Therefore, there are O(C + K) iterations of
+    the first loop. Each iteration takes a constant amount of time, and so the time complexity of the first
+    loop is O(C + K) * O(1) = O(C + K).
+        In the second phase of the algorithm the tortoise and hare move with the same speed (we slow down the
+    hare). The tortoise starts running from the starting position again, the hare starts from the
+    intersection point (so its position is unchanged). It would take the hare K steps to reach the start of
+    the cycle, and the tortoise will make (C - (K % C) + K) steps from the start of the loop. By the
+    distributive property of the modulo we will obtain the following:
+    (C - (K % C) + K) % C = (C % C) - ((K % C) % C) + (K % C) = 0 - (K % C) + (K % C) = 0
+    And so, the tortoise will be also at the start of the cycle. Therefore, after K moves it will meet the
+    hare, and the second loop exits.
+        We can notice that the number of iterations of the second loop (while) is equal to the number of
+    steps tortoise and hare make to meet, and so there are K iterations. Each iteration takes a constant
+    amount of time, and so the time complexity of the second loop is K * O(1) = O(K).
+        At the end of the second phase of the algorithm (at the end of the second loop) we found the start of
+    the cycle, which is the repeated number, and so we return it.
+        The overall time complexity is:
+                                     O(C + K) + O(K) = O(C + K) = O(n)
+        Because we only used two additional integer variables, we used only a constant amount of additional
+    memory. And so, the overall space complexity is:
+                                                    O(1)
+        As needed.
+
+b. uniqueMorseRepresentations:
+        We use a HashSet to store all the Morse codes in the given array. For each word in the given words
+    array, we go over its letters and translate each letter to Morse code. In the end we obtain a String
+    with all the translated letters in order, and so we obtained the Morse code of the word. For each word,
+    we add its Morse code into the HashSet. By the definition of the HashSet, only unique Morse codes are
+    added into it. Therefore, at the end of the loop that goes over all the words, in the HashSet there will
+    be all the unique Morse codes from the given array. And so, their number will be the size of the
+    HashSet, which we return.
+        Let S be the sum of the length of the words in the given array of words. That is, S is the number of
+    letters in all the words in the given array. For each word, we transform it to an array of characters,
+    which takes O(k), where k is the number of letters in the word. And so, for all the words this takes
+    O(S). For each word, we also make a string out of the translated word, which takes O(1). Because the
+    number of words is clearly smaller than the number of all the letters in them, then this also takes O(S).
+        Also, for each word in the given array we iterate over all its letters. And so, in sum for all the
+    words we iterate over all their letters. Therefore, the number of iterations in the two loops (the first
+    loop iterates over in sum is equal to the number of letters in all the words in the given array, that is,
+    to S. Because for each letter we perform a constant amount of work O(1), then the overall time complexity
+    is:
+                                   O(S) + O(S) + S * O(1) = 3 * O(S) = O(S)
+        As needed.
+
+3. Bonus:
+    See the file success.jpg.
